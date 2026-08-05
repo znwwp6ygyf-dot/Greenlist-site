@@ -83,6 +83,8 @@
   /* ---------- Hero ---------- */
   .hero{
     padding:88px 0 60px;
+  }
+  .hero-grid{
     display:grid;
     grid-template-columns:1.05fr 0.95fr;
     gap:40px;
@@ -388,7 +390,8 @@
 
   /* ---------- Responsive ---------- */
   @media (max-width: 860px){
-    .hero{ grid-template-columns:1fr; padding-top:56px; }
+    .hero{ padding-top:56px; }
+    .hero-grid{ grid-template-columns:1fr; }
     .tee-sheet{ order:-1; }
     .steps{ grid-template-columns:1fr; }
     .showcase-inner, .coverage-inner{ grid-template-columns:1fr; }
@@ -412,7 +415,7 @@
 </header>
 
 <section class="hero">
-  <div class="wrap" style="display:contents;">
+  <div class="wrap hero-grid">
     <div>
       <div class="eyebrow">Now building — UK &amp; Ireland</div>
       <h1>Every course<br>you've played.<br><em>All in one list.</em></h1>
