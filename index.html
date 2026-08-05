@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greenlist — Your golf passport</title>
+<meta name="description" content="Greenlist is a passport for the courses you've played — mark them off, log a score, and watch your list grow.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23EDE6D6'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23B33A32'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1C2541;
+    --fairway:#1E3A2F;
+    --fairway-light:#2C5240;
+    --parchment:#EDE6D6;
+    --paper:#FAF8F0;
+    --stamp:#B33A32;
+    --brass:#B8935A;
+    --line: rgba(28,37,65,0.14);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--parchment);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 28px;}
+
+  /* subtle paper texture */
+  body::before{
+    content:"";
+    position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(28,37,65,0.035) 0, transparent 40%),
+      radial-gradient(circle at 80% 60%, rgba(28,37,65,0.03) 0, transparent 45%);
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    position:sticky; top:0; z-index:20;
+    background:rgba(237,230,214,0.86);
+    backdrop-filter: blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 0;
+  }
+  .logo{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Fraunces', serif; font-weight:600; font-size:20px;
+  }
+  .logo .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--stamp);
+  }
+  .nav-cta{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    padding:10px 18px;
+    background:var(--fairway);
+    color:var(--paper);
+    border-radius:3px;
+    text-decoration:none;
+    letter-spacing:0.02em;
+    transition:transform .15s ease, background .15s ease;
+  }
+  .nav-cta:hover{ background:var(--fairway-light); transform:translateY(-1px); }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding:88px 0 60px;
+    display:grid;
+    grid-template-columns:1.05fr 0.95fr;
+    gap:40px;
+    align-items:center;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--stamp);
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:20px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:24px; height:1px;
+    background:var(--stamp);
+  }
+  .hero h1{
+    font-size:clamp(38px, 5vw, 60px);
+    line-height:1.04;
+  }
+  .hero h1 em{
+    font-style:italic;
+    color:var(--fairway);
+  }
+  .hero p.sub{
+    margin-top:22px;
+    font-size:17px;
+    line-height:1.65;
+    max-width:460px;
+    color:rgba(28,37,65,0.78);
+  }
+
+  .signup{
+    margin-top:32px;
+    display:flex;
+    gap:0;
+    max-width:420px;
+    border:1.5px solid var(--ink);
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .signup input{
+    flex:1;
+    border:none;
+    background:var(--paper);
+    padding:14px 16px;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14.5px;
+    color:var(--ink);
+    outline:none;
+  }
+  .signup input::placeholder{ color:rgba(28,37,65,0.45); }
+  .signup button{
+    border:none;
+    background:var(--stamp);
+    color:var(--paper);
+    padding:0 22px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.03em;
+    cursor:pointer;
+    transition:background .15s ease;
+  }
+  .signup button:hover{ background:#9c322b; }
+  .signup-note{
+    margin-top:10px;
+    font-size:12.5px;
+    color:rgba(28,37,65,0.55);
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .form-msg{
+    margin-top:10px;
+    font-size:13px;
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--fairway);
+    display:none;
+  }
+
+  /* ---------- Tee sheet / scorecard ---------- */
+  .tee-sheet{
+    position:relative;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:26px 24px 22px;
+    box-shadow: 0 30px 60px -25px rgba(28,37,65,0.35), 0 2px 0 var(--brass);
+  }
+  .sheet-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:rgba(28,37,65,0.42);
+    display:flex; justify-content:space-between;
+    border-bottom:1px solid var(--line);
+    padding-bottom:14px;
+    margin-bottom:6px;
+  }
+  .sheet-row{
+    display:flex; align-items:center; gap:14px;
+    padding:15px 0;
+    border-bottom:1px solid var(--line);
+    opacity:0;
+    transform:translateX(10px);
+    transition:opacity .45s ease, transform .45s ease;
+  }
+  .sheet-row.show{ opacity:1; transform:translateX(0); }
+  .sheet-row:last-of-type{ border-bottom:none; }
+  .checkbox{
+    flex:none;
+    width:22px; height:22px;
+    border:2px solid var(--ink);
+    border-radius:3px;
+    position:relative;
+  }
+  .checkbox svg{
+    position:absolute; inset:-1px;
+    stroke:var(--stamp);
+    stroke-width:3;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    fill:none;
+    stroke-dasharray:20;
+    stroke-dashoffset:20;
+    transition:stroke-dashoffset .35s ease .1s;
+  }
+  .sheet-row.show .checkbox svg{ stroke-dashoffset:0; }
+  .sheet-row .info{ flex:1; min-width:0; }
+  .sheet-row .cname{ font-weight:500; font-size:14.5px; }
+  .sheet-row .cloc{ display:block; font-size:11.5px; color:rgba(28,37,65,0.5); margin-top:2px; }
+  .sheet-row .par{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:rgba(28,37,65,0.4);
+    flex:none;
+  }
+  .sheet-total{
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px solid var(--ink);
+    display:flex; justify-content:space-between;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--fairway);
+  }
+
+  /* ---------- Section shells ---------- */
+  section{ padding:76px 0; }
+  .section-head{ max-width:560px; margin-bottom:48px; }
+  .section-head .eyebrow{ margin-bottom:14px; }
+  .section-head h2{ font-size:clamp(28px,3.4vw,38px); line-height:1.1; }
+  .section-head p{ margin-top:14px; font-size:16px; line-height:1.6; color:rgba(28,37,65,0.72); }
+
+  /* ---------- How it works: stamp-style steps ---------- */
+  .steps{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:0;
+    border-top:1px solid var(--line);
+    border-left:1px solid var(--line);
+  }
+  .step{
+    border-right:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    padding:32px 28px 36px;
+  }
+  .step .stampnum{
+    width:44px; height:44px;
+    border:1.5px solid var(--ink);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    margin-bottom:20px;
+  }
+  .step h3{ font-size:19px; margin-bottom:10px; }
+  .step p{ font-size:14.5px; line-height:1.6; color:rgba(28,37,65,0.7); margin:0; }
+
+  /* ---------- Phone mockup ---------- */
+  .showcase{
+    background:var(--fairway);
+    color:var(--paper);
+  }
+  .showcase-inner{
+    display:grid;
+    grid-template-columns:0.9fr 1.1fr;
+    gap:56px;
+    align-items:center;
+  }
+  .showcase h2{ color:var(--paper); }
+  .showcase .eyebrow{ color:var(--brass); }
+  .showcase .eyebrow::before{ background:var(--brass); }
+  .showcase p{ color:rgba(250,248,240,0.75); font-size:16px; line-height:1.65; margin-top:14px; }
+
+  .phone{
+    width:260px; height:530px;
+    margin:0 auto;
+    background:var(--paper);
+    border-radius:34px;
+    border:6px solid var(--ink);
+    padding:16px 14px;
+    position:relative;
+    box-shadow:0 40px 70px -30px rgba(0,0,0,0.5);
+  }
+  .phone-notch{
+    position:absolute; top:6px; left:50%; transform:translateX(-50%);
+    width:70px; height:16px; background:var(--ink); border-radius:0 0 10px 10px;
+  }
+  .phone-head{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.08em;
+    color:rgba(28,37,65,0.5);
+    text-transform:uppercase;
+    margin:10px 0 12px;
+  }
+  .course-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:11px 10px;
+    border-bottom:1px solid var(--line);
+    font-size:12.5px;
+  }
+  .course-row .cname{ font-weight:500; color:var(--ink); }
+  .course-row .cloc{ display:block; font-size:10.5px; color:rgba(28,37,65,0.5); margin-top:2px; }
+  .badge{
+    width:20px; height:20px; border-radius:50%;
+    border:1.5px solid var(--stamp); color:var(--stamp);
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px;
+  }
+  .badge.pending{ border-color:rgba(28,37,65,0.25); color:rgba(28,37,65,0.3); }
+
+  /* ---------- Coverage ---------- */
+  .coverage-inner{
+    display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center;
+  }
+  .coverage-list{ list-style:none; margin:0; padding:0; }
+  .coverage-list li{
+    display:flex; align-items:baseline; justify-content:space-between;
+    padding:14px 0;
+    border-bottom:1px solid var(--line);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13.5px;
+  }
+  .coverage-list li .region{ font-family:'IBM Plex Sans', sans-serif; font-size:16px; font-weight:500; }
+  .coverage-list li .status{ color:var(--stamp); }
+  .coverage-list li .status.next{ color:rgba(28,37,65,0.45); }
+  .coverage-visual{
+    aspect-ratio:1/1;
+    border:1.5px dashed rgba(28,37,65,0.25);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+  .coverage-visual .core{
+    width:64%; height:64%;
+    border-radius:50%;
+    border:2px solid var(--fairway);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .coverage-visual .core .n{ font-family:'Fraunces', serif; font-size:44px; color:var(--fairway); }
+  .coverage-visual .core .l{ font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(28,37,65,0.55); margin-top:4px; }
+
+  /* ---------- Final CTA ---------- */
+  .cta-band{
+    background:var(--stamp);
+    color:var(--paper);
+    text-align:center;
+    padding:80px 28px;
+  }
+  .cta-band h2{ color:var(--paper); font-size:clamp(28px,4vw,42px); max-width:640px; margin:0 auto; line-height:1.15; }
+  .cta-band p{ margin-top:16px; color:rgba(250,248,240,0.85); font-size:16px; }
+  .cta-band .signup{ margin:28px auto 0; border-color:var(--paper); }
+  .cta-band .signup input{ background:rgba(250,248,240,0.95); }
+  .cta-band .signup button{ background:var(--ink); }
+  .cta-band .signup button:hover{ background:#0f1730; }
+  .cta-band .signup-note{ color:rgba(250,248,240,0.65); }
+
+  /* ---------- Footer ---------- */
+  footer{ padding:48px 0 40px; }
+  .foot-inner{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    border-top:1px solid var(--line);
+    padding-top:32px;
+    flex-wrap:wrap; gap:24px;
+  }
+  .foot-left .logo{ margin-bottom:10px; }
+  .foot-left p{ font-size:13.5px; color:rgba(28,37,65,0.55); max-width:320px; line-height:1.6; margin:0; }
+  .foot-links{ display:flex; gap:32px; }
+  .foot-col h4{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px; text-transform:uppercase; letter-spacing:0.1em;
+    color:rgba(28,37,65,0.45); margin-bottom:10px;
+  }
+  .foot-col a{ display:block; font-size:14px; text-decoration:none; margin-bottom:8px; color:var(--ink); }
+  .foot-col a:hover{ color:var(--stamp); }
+  .fineprint{ margin-top:36px; font-size:12px; color:rgba(28,37,65,0.4); font-family:'IBM Plex Mono', monospace; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 860px){
+    .hero{ grid-template-columns:1fr; padding-top:56px; }
+    .tee-sheet{ order:-1; }
+    .steps{ grid-template-columns:1fr; }
+    .showcase-inner, .coverage-inner{ grid-template-columns:1fr; }
+    .phone{ margin:0 auto; }
+    .foot-inner{ flex-direction:column; align-items:flex-start; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .stamp{ transition:none; }
+    html{ scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo"><span class="dot"></span>Greenlist</div>
+    <a class="nav-cta" href="#join">Get early access</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap" style="display:contents;">
+    <div>
+      <div class="eyebrow">Now building — UK &amp; Ireland</div>
+      <h1>Every course<br>you've played.<br><em>All in one list.</em></h1>
+      <p class="sub">Greenlist keeps track of every course you play — mark it off, log a score if you like, and watch your own list grow over time.</p>
+      <form class="signup" id="signupForm">
+        <input type="email" placeholder="you@email.com" id="emailInput" required>
+        <button type="submit">Join waitlist</button>
+      </form>
+      <div class="signup-note">No spam — one email when we launch.</div>
+      <div class="form-msg" id="formMsg">You're on the list. See you at launch.</div>
+    </div>
+
+    <div class="tee-sheet" id="teeSheet">
+      <div class="sheet-label"><span>My List</span><span>2026</span></div>
+      <div class="sheet-row"><div class="checkbox"><svg viewBox="0 0 22 22"><path d="M5 11 L9.5 15.5 L17 6.5"/></svg></div><div class="info"><div class="cname">St Andrews · Old Course</div><span class="cloc">Fife, Scotland</span></div><div class="par">PAR 72</div></div>
+      <div class="sheet-row"><div class="checkbox"><svg viewBox="0 0 22 22"><path d="M5 11 L9.5 15.5 L17 6.5"/></svg></div><div class="info"><div class="cname">Royal Portrush</div><span class="cloc">Antrim, N. Ireland</span></div><div class="par">PAR 72</div></div>
+      <div class="sheet-row"><div class="checkbox"><svg viewBox="0 0 22 22"><path d="M5 11 L9.5 15.5 L17 6.5"/></svg></div><div class="info"><div class="cname">Carnoustie</div><span class="cloc">Angus, Scotland</span></div><div class="par">PAR 71</div></div>
+      <div class="sheet-row"><div class="checkbox"><svg viewBox="0 0 22 22"><path d="M5 11 L9.5 15.5 L17 6.5"/></svg></div><div class="info"><div class="cname">Lahinch</div><span class="cloc">Co. Clare, Ireland</span></div><div class="par">PAR 72</div></div>
+      <div class="sheet-total"><span>12 played</span><span>600+ courses tracked</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">How it works</div>
+      <h2>Three steps, one growing collection.</h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="stampnum">01</div>
+        <h3>Play a course</h3>
+        <p>Any round, anywhere — a quick weekday nine or a bucket-list links trip.</p>
+      </div>
+      <div class="step">
+        <div class="stampnum">02</div>
+        <h3>Mark it off</h3>
+        <p>Find the course in Greenlist and stamp it into your passport, with a score and a photo if you want one.</p>
+      </div>
+      <div class="step">
+        <div class="stampnum">03</div>
+        <h3>Watch it build</h3>
+        <p>Your passport fills in course by course — a record of everywhere you've played, and everywhere left to go.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="showcase">
+  <div class="wrap showcase-inner">
+    <div>
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-head">My List · 12 courses</div>
+        <div class="course-row"><div><div class="cname">Royal Dornoch</div><span class="cloc">Sutherland, Scotland</span></div><div class="badge">✓</div></div>
+        <div class="course-row"><div><div class="cname">Turnberry (Ailsa)</div><span class="cloc">Ayrshire, Scotland</span></div><div class="badge">✓</div></div>
+        <div class="course-row"><div><div class="cname">Portmarnock</div><span class="cloc">Co. Dublin, Ireland</span></div><div class="badge">✓</div></div>
+        <div class="course-row"><div><div class="cname">Ballybunion</div><span class="cloc">Co. Kerry, Ireland</span></div><div class="badge pending">·</div></div>
+        <div class="course-row"><div><div class="cname">Muirfield</div><span class="cloc">East Lothian, Scotland</span></div><div class="badge pending">·</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="eyebrow">Built for golfers, not spreadsheets</div>
+      <h2>A cleaner way to remember where you've played.</h2>
+      <p>No more half-remembered course names in a notes app. Greenlist keeps a proper log — searchable, mapped, and shareable with friends who are chasing their own list.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap coverage-inner">
+    <div>
+      <div class="section-head" style="margin-bottom:28px;">
+        <div class="eyebrow">Coverage</div>
+        <h2>Starting close to home.</h2>
+        <p>We're launching with full course data for the UK and Ireland, then expanding outward.</p>
+      </div>
+      <ul class="coverage-list">
+        <li><span class="region">Scotland</span><span class="status">at launch</span></li>
+        <li><span class="region">England, Wales &amp; N. Ireland</span><span class="status">at launch</span></li>
+        <li><span class="region">Republic of Ireland</span><span class="status">at launch</span></li>
+        <li><span class="region">Continental Europe</span><span class="status next">next</span></li>
+        <li><span class="region">United States</span><span class="status next">next</span></li>
+      </ul>
+    </div>
+    <div class="coverage-visual">
+      <div class="core">
+        <div class="n">600+</div>
+        <div class="l">courses at launch</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band" id="join">
+  <div class="wrap" style="padding:0;">
+    <h2>Be first through the gate.</h2>
+    <p>Join the waitlist and get early access before the public launch.</p>
+    <form class="signup" id="signupForm2">
+      <input type="email" placeholder="you@email.com" id="emailInput2" required>
+      <button type="submit">Join waitlist</button>
+    </form>
+    <div class="signup-note">No spam — one email when we launch.</div>
+    <div class="form-msg" id="formMsg2" style="color:var(--paper);"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-inner">
+      <div class="foot-left">
+        <div class="logo"><span class="dot"></span>Greenlist</div>
+        <p>Every course you've played, all in one list. Built in Scotland, starting close to home.</p>
+      </div>
+      <div class="foot-links">
+        <div class="foot-col">
+          <h4>Contact</h4>
+          <a href="mailto:hello@greenlistapp.com">hello@greenlistapp.com</a>
+        </div>
+        <div class="foot-col">
+          <h4>Follow</h4>
+          <a href="#">Instagram</a>
+          <a href="#">TikTok</a>
+        </div>
+        <div class="foot-col">
+          <h4>Legal</h4>
+          <a href="privacy-policy.html">Privacy Policy</a>
+        </div>
+      </div>
+    </div>
+    <div class="fineprint">Greenlist — currently in development. UK &amp; Ireland courses at launch.</div>
+  </div>
+</footer>
+
+<script>
+  // Tee sheet row entrance + tick animation
+  const rows = document.querySelectorAll('.sheet-row');
+  rows.forEach((r,i)=>{
+    setTimeout(()=>r.classList.add('show'), 300 + i*180);
+  });
+
+  // Signup forms (front-end only placeholder — wire to real backend/ESP later)
+  function wireForm(formId, inputId, msgId){
+    const form = document.getElementById(formId);
+    const msg = document.getElementById(msgId);
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      msg.style.display = 'block';
+      form.reset();
+    });
+  }
+  wireForm('signupForm','emailInput','formMsg');
+  wireForm('signupForm2','emailInput2','formMsg2');
+</script>
+
+</body>
+</html>
