@@ -420,8 +420,9 @@
       <div class="eyebrow">Now building — UK &amp; Ireland</div>
       <h1>Every course<br>you've played.<br><em>All in one list.</em></h1>
       <p class="sub">Greenlist keeps track of every course you play — mark it off, log a score if you like, and watch your own list grow over time.</p>
-      <form class="signup" id="signupForm">
-        <input type="email" placeholder="you@email.com" id="emailInput" required>
+      <form class="signup" id="signupForm" action="https://github.us18.list-manage.com/subscribe/post?u=df4ca1a21cd50c52e8f4aa1c7&amp;id=a59db106d7&amp;f_id=00a8b3e6f0" method="post" target="_blank" novalidate>
+        <input type="email" name="EMAIL" placeholder="you@email.com" id="emailInput" required>
+        <div aria-hidden="true" style="position:absolute; left:-5000px;"><input type="text" name="b_df4ca1a21cd50c52e8f4aa1c7_a59db106d7" tabindex="-1" value=""></div>
         <button type="submit">Join waitlist</button>
       </form>
       <div class="signup-note">No spam — one email when we launch.</div>
@@ -515,8 +516,9 @@
   <div class="wrap" style="padding:0;">
     <h2>Be first through the gate.</h2>
     <p>Join the waitlist and get early access before the public launch.</p>
-    <form class="signup" id="signupForm2">
-      <input type="email" placeholder="you@email.com" id="emailInput2" required>
+    <form class="signup" id="signupForm2" action="https://github.us18.list-manage.com/subscribe/post?u=df4ca1a21cd50c52e8f4aa1c7&amp;id=a59db106d7&amp;f_id=00a8b3e6f0" method="post" target="_blank" novalidate>
+      <input type="email" name="EMAIL" placeholder="you@email.com" id="emailInput2" required>
+      <div aria-hidden="true" style="position:absolute; left:-5000px;"><input type="text" name="b_df4ca1a21cd50c52e8f4aa1c7_a59db106d7" tabindex="-1" value=""></div>
       <button type="submit">Join waitlist</button>
     </form>
     <div class="signup-note">No spam — one email when we launch.</div>
@@ -558,18 +560,32 @@
     setTimeout(()=>r.classList.add('show'), 300 + i*180);
   });
 
-  // Signup forms (front-end only placeholder — wire to real backend/ESP later)
-  function wireForm(formId, inputId, msgId){
+  // Signup forms — post to Mailchimp in the background so the page never navigates away
+  function wireForm(formId, msgId){
     const form = document.getElementById(formId);
     const msg = document.getElementById(msgId);
+    const button = form.querySelector('button[type="submit"]');
     form.addEventListener('submit', function(e){
       e.preventDefault();
-      msg.style.display = 'block';
-      form.reset();
+      button.disabled = true;
+      const data = new URLSearchParams(new FormData(form));
+      fetch(form.action, { method: 'POST', mode: 'no-cors', body: data })
+        .then(function(){
+          msg.textContent = "You're on the list. See you at launch.";
+          msg.style.display = 'block';
+          form.reset();
+        })
+        .catch(function(){
+          msg.textContent = 'Something went wrong — please try again.';
+          msg.style.display = 'block';
+        })
+        .finally(function(){
+          button.disabled = false;
+        });
     });
   }
-  wireForm('signupForm','emailInput','formMsg');
-  wireForm('signupForm2','emailInput2','formMsg2');
+  wireForm('signupForm','formMsg');
+  wireForm('signupForm2','formMsg2');
 </script>
 
 </body>
